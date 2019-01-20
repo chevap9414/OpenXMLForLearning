@@ -15,17 +15,10 @@ namespace ReadExcel
     {
         static void Main(string[] args)
         {
-            List<List<string>> Ls = ReadExcelFile(@"Test.xlsx");
-            for (var i = 0; i < Ls.Count; i++)
-            {
-                Console.WriteLine("Row:" + i);
-                for (var j = 0; j < Ls[i].Count; j++)
-                {
-                    Console.Write(Ls[i][j] + ",");
-                }
-                Console.WriteLine();
-            }
-            //Console.WriteLine(ReadExcelFile(@"Test.xlsx"));
+            ModelTypeImportExcel modelTypeImportExcel = new ModelTypeImportExcel();
+            IModelTypeImportExcel ImodelTypeImportExcelService = modelTypeImportExcel;
+
+            ImodelTypeImportExcelService.ImportExcel(@"Test.xlsx", "A");
             Console.Read();
         }
 
