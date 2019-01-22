@@ -106,8 +106,15 @@
   <ItemGroup>
     <Compile Include="IModelTypeImportExcel.cs" />
     <Compile Include="ModelTypeImportExcel.cs" />
+    <Compile Include="ModelTypeTempEngineModel.cs" />
+    <Compile Include="ModelTypeTempEquipmentModel.cs" />
+    <Compile Include="ModelTypeTempRowModel.cs" />
+    <Compile Include="ModelTypeTempSheetModel.cs" />
+    <Compile Include="ModelTypeTempTypeModel.cs" />
+    <Compile Include="MTExcelHeaderModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UploadFileImportModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -134,5 +134,28 @@ namespace ReadExcel
 
             return value;
         }
+
+        public bool IsPreverifyExcel(UploadFileImportModel model)
+        {
+            bool IsSucceed = true;
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.SavePathSuccess, false))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                List<string> cellHeaderValueChecks = new List<string>() { "A6", "B6", "C6", "D6", "E6" };
+                foreach (Sheet sheet in workbookPart.Workbook.Sheets)
+                {
+                    WorksheetPart worksheetPart = (WorksheetPart)(workbookPart.GetPartById(sheet.Id));
+                    foreach(string columnName in cellHeaderValueChecks)
+                    {
+                        if(string.IsNullOrEmpty(GetCellValue(workbookPart, sheet, columnName)))
+                        {
+                            return IsSucceed = false;
+                        }
+                    }
+                }
+            }
+            return IsSucceed;
+        }
     }
 }

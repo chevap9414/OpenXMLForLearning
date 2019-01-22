@@ -13,5 +13,12 @@
         /// </param>
         /// <returns></returns>
         bool ImportExcel(string fileName, string uploadBy);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        bool IsPreverifyExcel(UploadFileImportModel model);
     }
 }
