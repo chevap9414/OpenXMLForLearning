@@ -104,7 +104,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseExcel.cs" />
     <Compile Include="IModelTypeImportExcel.cs" />
+    <Compile Include="IServices\IBaseExcel.cs" />
+    <Compile Include="IServices\IExcelService.cs" />
+    <Compile Include="IServices\IExportExcelService.cs" />
+    <Compile Include="IServices\IImportExcelService.cs" />
+    <Compile Include="LOList.cs" />
     <Compile Include="ModelTypeImportExcel.cs" />
     <Compile Include="ModelTypeTempEngineModel.cs" />
     <Compile Include="ModelTypeTempEquipmentModel.cs" />
@@ -112,8 +118,11 @@
     <Compile Include="ModelTypeTempSheetModel.cs" />
     <Compile Include="ModelTypeTempTypeModel.cs" />
     <Compile Include="MTExcelHeaderModel.cs" />
+    <Compile Include="MTList.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\LOTypeList.cs" />
+    <Compile Include="Services\ModelTypeList.cs" />
     <Compile Include="UploadFileImportModel.cs" />
   </ItemGroup>
   <ItemGroup>

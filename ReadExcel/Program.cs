@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ReadExcel.IServices;
+using ReadExcel.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,14 +17,14 @@ namespace ReadExcel
     {
         static void Main(string[] args)
         {
+            IExcelService excelService = new ModelTypeList();
+            BaseExcel excel = new BaseExcel(excelService);
+            string filePath = string.Empty;
+            
+
             ModelTypeImportExcel modelTypeImportExcel = new ModelTypeImportExcel();
             IModelTypeImportExcel ImodelTypeImportExcelService = modelTypeImportExcel;
 
-            //ImodelTypeImportExcelService.ImportExcel(@"Test.xlsx", "A");
-            //ImodelTypeImportExcelService.IsPreverifyExcel(
-            //    new UploadFileImportModel {
-            //        SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx")
-            //    });
             ReadExcel(new UploadFileImportModel {
                 SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx"),
             });
@@ -59,7 +61,9 @@ namespace ReadExcel
                     int indexVinStart = 0;
                     int indexEngineSerialNoStart = 0;
                     int indexErrorDescriptionStart = 0;
-                    for(var i = 6; i < 9; i++)
+                    int inedexRowOfHeader_Start = 6;
+                    int indexRowOfHeader_End = 8;
+                    for(var i = inedexRowOfHeader_Start; i < indexRowOfHeader_End; i++)
                     {
                         foreach (Cell cell in rows.ElementAt(i).Descendants<Cell>())
                         {
