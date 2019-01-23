@@ -110,6 +110,7 @@
     <Compile Include="IServices\IExcelService.cs" />
     <Compile Include="IServices\IExportExcelService.cs" />
     <Compile Include="IServices\IImportExcelService.cs" />
+    <Compile Include="IServices\IReadFile.cs" />
     <Compile Include="LOList.cs" />
     <Compile Include="ModelTypeImportExcel.cs" />
     <Compile Include="ModelTypeTempEngineModel.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="ModelTypeTempRowModel.cs" />
     <Compile Include="ModelTypeTempSheetModel.cs" />
     <Compile Include="ModelTypeTempTypeModel.cs" />
+    <Compile Include="ModelTypeUploadModel.cs" />
     <Compile Include="MTExcelHeaderModel.cs" />
     <Compile Include="MTList.cs" />
     <Compile Include="Program.cs" />

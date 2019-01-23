@@ -11,5 +11,6 @@ namespace ReadExcel.IServices
         IImportExcelService Import();
         IImportExcelService Import(string filePath);
         IExportExcelService Export();
+        IReadFile ReadFile(string filePath);
     }
 }

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReadExcel
@@ -17,26 +18,82 @@ namespace ReadExcel
     {
         static void Main(string[] args)
         {
-            IExcelService excelService = new ModelTypeList();
-            BaseExcel excel = new BaseExcel(excelService);
-            string filePath = string.Empty;
-            
+            //IExcelService excelService = new ModelTypeList();
+            //BaseExcel excel = new BaseExcel(excelService);
+            //string filePath = string.Empty;
+            //excel.ReadFile(filePath);
 
-            ModelTypeImportExcel modelTypeImportExcel = new ModelTypeImportExcel();
-            IModelTypeImportExcel ImodelTypeImportExcelService = modelTypeImportExcel;
+            //ModelTypeImportExcel modelTypeImportExcel = new ModelTypeImportExcel();
+            //IModelTypeImportExcel ImodelTypeImportExcelService = modelTypeImportExcel;
 
-            ReadExcel(new UploadFileImportModel {
-                SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx"),
-            });
+            //ReadExcel(new UploadFileImportModel {
+            //    SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx"),
+            //});
+            UploadFileImportModel model = new UploadFileImportModel
+            {
+                FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx")
+            };
+            int? value = ReadExcelOnThread(model);
+            //if (IsPreverifyExcel(model))
+            //{
+            //    //Create Header
+            //    // Service M_ModelTypeUpload Add
+            //    UpdateModelTypeUploadHeader(model, new List<string>() { "A6", "B6", "C6", "D6", "E6" });
+            //}
+
 
             Console.Read();
         }
 
+        private static bool IsPreverifyExcel(UploadFileImportModel model)
+        {
+            bool IsSucceed = true;
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.FileName, false))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                List<string> cellHeaderValueChecks = new List<string>() { "A6", "B6", "C6", "D6", "E6" };
+                foreach (Sheet sheet in workbookPart.Workbook.Sheets)
+                {
+                    WorksheetPart worksheetPart = (WorksheetPart)(workbookPart.GetPartById(sheet.Id));
+                    foreach (string columnName in cellHeaderValueChecks)
+                    {
+                        if (string.IsNullOrEmpty(GetCellValue(workbookPart, sheet, columnName)))
+                        {
+                            return IsSucceed = false;
+                        }
+                    }
+                }
+            }
+            return IsSucceed;
+        }
+
+        private static void UpdateModelTypeUploadHeader(UploadFileImportModel model, List<string> headerAddress)
+        {
+            ModelTypeUploadModel updateModel = new ModelTypeUploadModel();
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.FileName, false))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                
+                foreach (Sheet sheet in workbookPart.Workbook.Sheets)
+                {
+                    
+                }
+            }
+        }
+
+        private static int? ReadExcelOnThread(UploadFileImportModel model)
+        {
+            List<ModelTypeTempSheetModel> value = new List<ModelTypeTempSheetModel>();
+            Thread thReadExcel = new Thread(() => { value = ReadExcel(model); });
+            thReadExcel.Start();
+            return 44;
+        }
         private static List<ModelTypeTempSheetModel> ReadExcel(UploadFileImportModel model)
         {
-
+            ModelTypeUploadModel modelTypeUploadModel = new ModelTypeUploadModel();
             List<List<string>> rowValues = new List<List<string>>();
-            string fileName = model.SavePathSuccess;
+            string fileName = model.FileName;
             List<ModelTypeTempSheetModel> sheetModels = new List<ModelTypeTempSheetModel>();
             ModelTypeTempSheetModel sheetModel;
 
@@ -64,7 +121,31 @@ namespace ReadExcel
                     int indexErrorDescriptionStart = 0;
                     int inedexRowOfHeader_Start = 6;
                     int indexRowOfHeader_End = 8;
-                    for(var i = inedexRowOfHeader_Start; i < indexRowOfHeader_End; i++)
+
+                    foreach (Cell cell in rows.ElementAt(5).Descendants<Cell>())
+                    {
+                        if (new[] { "A6", "B6", "C6", "E6" }.Contains(cell.CellReference.Value))
+                        {
+                            string value = GetCellValue(workbookPart, sheet, cell.CellReference);
+                            switch (cell.CellReference.Value)
+                            {
+                                case "A6":
+                                    sheetModel.YM = value;
+                                    break;
+                                case "B6":
+                                    sheetModel.Model = value;
+                                    break;
+                                case "C6":
+                                    sheetModel.Door = value;
+                                    break;
+                                case "E6":
+                                    sheetModel.Plant = value;
+                                    break;
+                            }
+                        }
+                    }
+
+                    for (var i = inedexRowOfHeader_Start; i < indexRowOfHeader_End; i++)
                     {
                         foreach (Cell cell in rows.ElementAt(i).Descendants<Cell>())
                         {

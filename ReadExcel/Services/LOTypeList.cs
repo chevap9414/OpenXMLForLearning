@@ -17,5 +17,15 @@ namespace ReadExcel.Services
         {
             return new LOList();
         }
+
+        public IImportExcelService Import(string filePath)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReadFile ReadFile(string filePath)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

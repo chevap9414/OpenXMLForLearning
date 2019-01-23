@@ -21,5 +21,10 @@ namespace ReadExcel.Services
         {
             return new MTList();
         }
+
+        public IReadFile ReadFile(string filePath)
+        {
+            return new MTList();
+        }
     }
 }

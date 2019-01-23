@@ -14,13 +14,19 @@ namespace ReadExcel
     {
         readonly IImportExcelService importExcelService;
         readonly IExportExcelService exportExcelService;
+        readonly IReadFile readFileService;
 
         public BaseExcel(IExcelService excelService)
         {
             importExcelService = excelService.Import();
             exportExcelService = excelService.Export();
+            readFileService = excelService.ReadFile("");
         }
 
+        public void ReadFile(string fileName)
+        {
+            readFileService.ReadFile(fileName);
+        }
         public int ImportMTList(string fileName)
         {
             return importExcelService.Import(fileName);
