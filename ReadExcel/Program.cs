@@ -37,10 +37,11 @@ namespace ReadExcel
             string fileName = model.SavePathSuccess;
             List<ModelTypeTempSheetModel> sheetModels = new List<ModelTypeTempSheetModel>();
             ModelTypeTempSheetModel sheetModel;
-            List<ModelTypeTempRowModel> tempRowModels = new List<ModelTypeTempRowModel>();
+
             using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
             {
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                int sheetCount = 0;
                 foreach (Sheet sheet in workbookPart.Workbook.Sheets)
                 {
                     sheetModel = new ModelTypeTempSheetModel();
@@ -90,9 +91,7 @@ namespace ReadExcel
                         }
                     }
                     
-
                     ModelTypeTempRowModel modelTypeTempRowModel;
-                    //List<ModelTypeTempEngineModel> modelTypeTempEngineModels;
                     ModelTypeTempEngineModel engineModel;
                     List<ModelTypeTempEquipmentModel> equipmentModels;
                     ModelTypeTempEquipmentModel equipmentModel;
@@ -102,7 +101,6 @@ namespace ReadExcel
                     for (var i = 9; i < rows.Count; i++)
                     {
                         modelTypeTempRowModel = new ModelTypeTempRowModel();
-                        //modelTypeTempEngineModels = new List<ModelTypeTempEngineModel>();
                         equipmentModels = new List<ModelTypeTempEquipmentModel>();
                         typeModel = new ModelTypeTempTypeModel();
                         typeModels = new List<ModelTypeTempTypeModel>();
@@ -242,12 +240,6 @@ namespace ReadExcel
                             }
                             #endregion
 
-                            // ENGINE SERIAL No.
-
-                            // Error Description
-
-                            //
-                            //
                             cellValues.Add(currentCellValue);
                         }
                         // End Cell
@@ -256,10 +248,10 @@ namespace ReadExcel
                         modelTypeTempRowModel.modelTypeTempEngines.Add(engineModel);
                         modelTypeTempRowModel.modelTypeTempEquipmentModels.AddRange(equipmentModels);
                         modelTypeTempRowModel.modelTypeTempTypeModels.AddRange(typeModels);
-                        tempRowModels.Add(modelTypeTempRowModel);
-                        sheetModel.modelTypeTempRowModels.AddRange(tempRowModels);
+                        sheetModel.modelTypeTempRowModels.Add(modelTypeTempRowModel);
                     }
                     //End  Row
+                    sheetModel.SheetNo = ++sheetCount;
                     sheetModels.Add(sheetModel);
                 }
             }
