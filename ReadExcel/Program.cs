@@ -25,30 +25,25 @@ namespace ReadExcel
             {
                 FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx")
             };
-            if (!ValidateHeader(uploadModel))
-            {
-                
-            }
+            Console.WriteLine(ImportExcel(uploadModel));
 
             Console.Read();
         }
 
-
-
         public static int ImportExcel(UploadFileImportModel model)
         {
-            if (!ValidateHeader(model))
+            if (!HeaderValidation(model))
             {
                 return 7;
             }
             return ReadExcelOnThread(model);
         }
 
-        public static bool ValidateHeader(UploadFileImportModel model)
+        public static bool HeaderValidation(UploadFileImportModel model)
         {
             bool IsSucceed = true;
 
-            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.SavePathSuccess, false))
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.FileName, false))
             {
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
                 List<string> cellHeaderValueChecks = new List<string>() { "A6", "B6", "C6", "D6", "E6" };
@@ -72,19 +67,18 @@ namespace ReadExcel
             ModelTypeUploadModel value = new ModelTypeUploadModel();
             Thread thReadExcel = new Thread(() => { value = ReadExcel(model); });
             thReadExcel.Start();
-            return value.UploadStatusID.HasValue ? 44 : 0;
+            return value.UploadStatusID ?? 44;
         }
-
 
         private static ModelTypeUploadModel ReadExcel(UploadFileImportModel model)
         {
             ModelTypeUploadModel modelTypeUpload = new ModelTypeUploadModel();
             List<List<string>> rowValues = new List<List<string>>();
-            string fileName = model.SavePathSuccess;
+
             List<ModelTypeTempSheetModel> sheetModels = new List<ModelTypeTempSheetModel>();
             ModelTypeTempSheetModel sheetModel;
 
-            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.FileName, false))
             {
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
                 int sheetCount = 0;
@@ -328,6 +322,7 @@ namespace ReadExcel
                     modelTypeUpload.ModelTypeTempSheetModels.Add(sheetModel);
                 }
             }
+            modelTypeUpload.UploadStatusID = 44;
             return modelTypeUpload;
         }
 
