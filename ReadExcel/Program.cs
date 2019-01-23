@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReadExcel
@@ -75,7 +76,7 @@ namespace ReadExcel
         }
 
 
-        private ModelTypeUploadModel ReadExcel(UploadFileImportModel model)
+        private static ModelTypeUploadModel ReadExcel(UploadFileImportModel model)
         {
             ModelTypeUploadModel modelTypeUpload = new ModelTypeUploadModel();
             List<List<string>> rowValues = new List<List<string>>();
