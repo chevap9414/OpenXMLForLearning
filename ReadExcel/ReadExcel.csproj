@@ -111,6 +111,7 @@
     <Compile Include="ModelTypeTempRowModel.cs" />
     <Compile Include="ModelTypeTempSheetModel.cs" />
     <Compile Include="ModelTypeTempTypeModel.cs" />
+    <Compile Include="ModelTypeUploadModel.cs" />
     <Compile Include="MTExcelHeaderModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -126,6 +127,11 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\DataLayer\DataLayer.csproj">
+      <Project>{3576b294-740c-4896-889a-41de964b7288}</Project>
+      <Name>DataLayer</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml;
+﻿using DataLayer;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System;
@@ -17,30 +18,75 @@ namespace ReadExcel
         {
             ModelTypeImportExcel modelTypeImportExcel = new ModelTypeImportExcel();
             IModelTypeImportExcel ImodelTypeImportExcelService = modelTypeImportExcel;
+            //ASHAOP_DEVEntities entities = new ASHAOP_DEVEntities();
 
-            //ImodelTypeImportExcelService.ImportExcel(@"Test.xlsx", "A");
-            //ImodelTypeImportExcelService.IsPreverifyExcel(
-            //    new UploadFileImportModel {
-            //        SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx")
-            //    });
-            ReadExcel(new UploadFileImportModel {
-                SavePathSuccess = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx"),
-            });
+            var uploadModel = new UploadFileImportModel
+            {
+                FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\Test.xlsx")
+            };
+            if (!ValidateHeader(uploadModel))
+            {
+                
+            }
 
             Console.Read();
         }
 
-        private static List<ModelTypeTempSheetModel> ReadExcel(UploadFileImportModel model)
-        {
 
+
+        public static int ImportExcel(UploadFileImportModel model)
+        {
+            if (!ValidateHeader(model))
+            {
+                return 7;
+            }
+            return ReadExcelOnThread(model);
+        }
+
+        public static bool ValidateHeader(UploadFileImportModel model)
+        {
+            bool IsSucceed = true;
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(model.SavePathSuccess, false))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                List<string> cellHeaderValueChecks = new List<string>() { "A6", "B6", "C6", "D6", "E6" };
+                foreach (Sheet sheet in workbookPart.Workbook.Sheets)
+                {
+                    WorksheetPart worksheetPart = (WorksheetPart)(workbookPart.GetPartById(sheet.Id));
+                    foreach (string columnName in cellHeaderValueChecks)
+                    {
+                        if (string.IsNullOrEmpty(GetCellValue(workbookPart, sheet, columnName)))
+                        {
+                            return IsSucceed = false;
+                        }
+                    }
+                }
+            }
+            return IsSucceed;
+        }
+
+        private static int ReadExcelOnThread(UploadFileImportModel model)
+        {
+            ModelTypeUploadModel value = new ModelTypeUploadModel();
+            Thread thReadExcel = new Thread(() => { value = ReadExcel(model); });
+            thReadExcel.Start();
+            return value.UploadStatusID.HasValue ? 44 : 0;
+        }
+
+
+        private ModelTypeUploadModel ReadExcel(UploadFileImportModel model)
+        {
+            ModelTypeUploadModel modelTypeUpload = new ModelTypeUploadModel();
             List<List<string>> rowValues = new List<List<string>>();
             string fileName = model.SavePathSuccess;
             List<ModelTypeTempSheetModel> sheetModels = new List<ModelTypeTempSheetModel>();
             ModelTypeTempSheetModel sheetModel;
-            List<ModelTypeTempRowModel> tempRowModels = new List<ModelTypeTempRowModel>();
+
             using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
             {
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
+                int sheetCount = 0;
                 foreach (Sheet sheet in workbookPart.Workbook.Sheets)
                 {
                     sheetModel = new ModelTypeTempSheetModel();
@@ -52,14 +98,40 @@ namespace ReadExcel
                     List<string> preRow = new List<string>();
                     List<string> cellValues = new List<string>();
 
-                    //Find index header
                     int indexMainEquipStart = 0;
                     int indexPNoStart = 0;
                     int indexTypeStart = 0;
                     int indexVinStart = 0;
                     int indexEngineSerialNoStart = 0;
                     int indexErrorDescriptionStart = 0;
-                    for(var i = 6; i < 9; i++)
+                    int inedexRowOfHeader_Start = 6;
+                    int indexRowOfHeader_End = 8;
+
+                    // Assign header value
+                    foreach (Cell cell in rows.ElementAt(5).Descendants<Cell>())
+                    {
+                        if (new[] { "A6", "B6", "C6", "E6" }.Contains(cell.CellReference.Value))
+                        {
+                            string value = GetCellValue(workbookPart, sheet, cell.CellReference);
+                            switch (cell.CellReference.Value)
+                            {
+                                case "A6":
+                                    sheetModel.YM = value;
+                                    break;
+                                case "B6":
+                                    sheetModel.Model = value;
+                                    break;
+                                case "C6":
+                                    sheetModel.Door = value;
+                                    break;
+                                case "E6":
+                                    sheetModel.Plant = value;
+                                    break;
+                            }
+                        }
+                    }
+                    // Find column header index
+                    for (var i = inedexRowOfHeader_Start; i < indexRowOfHeader_End; i++)
                     {
                         foreach (Cell cell in rows.ElementAt(i).Descendants<Cell>())
                         {
@@ -89,10 +161,8 @@ namespace ReadExcel
                             }
                         }
                     }
-                    
 
                     ModelTypeTempRowModel modelTypeTempRowModel;
-                    //List<ModelTypeTempEngineModel> modelTypeTempEngineModels;
                     ModelTypeTempEngineModel engineModel;
                     List<ModelTypeTempEquipmentModel> equipmentModels;
                     ModelTypeTempEquipmentModel equipmentModel;
@@ -102,14 +172,13 @@ namespace ReadExcel
                     for (var i = 9; i < rows.Count; i++)
                     {
                         modelTypeTempRowModel = new ModelTypeTempRowModel();
-                        //modelTypeTempEngineModels = new List<ModelTypeTempEngineModel>();
                         equipmentModels = new List<ModelTypeTempEquipmentModel>();
                         typeModel = new ModelTypeTempTypeModel();
                         typeModels = new List<ModelTypeTempTypeModel>();
                         cellValues = new List<string>();
                         engineModel = new ModelTypeTempEngineModel();
 
-                        modelTypeTempRowModel.RowNo = i+1;
+                        modelTypeTempRowModel.RowNo = i + 1;
                         foreach (Cell cell in rows.ElementAt(i).Cast<Cell>())
                         {
                             string currentColumn = GetColumnName(cell.CellReference);
@@ -120,7 +189,7 @@ namespace ReadExcel
                             #region Engine
                             if (new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" }.Contains(GetColumnName(cell.CellReference)))
                             {
-                                
+
                                 #region  Replace Value
                                 if (cell.CellReference == "A" + (i + 1))
                                 {
@@ -193,7 +262,7 @@ namespace ReadExcel
                                         break;
 
                                 }
-                                
+
                             }
                             #endregion
 
@@ -201,7 +270,7 @@ namespace ReadExcel
                             string columnEndGetEquipment = GetColumnName(GetMergeCellEndPosition(workbookPart, sheet, "K7"));
                             int indexMainEquipEnd = GetColumnIndex(columnEndGetEquipment);
 
-                            if(currentIndex >= indexMainEquipStart && currentIndex <= indexMainEquipEnd) // Start K Column
+                            if (currentIndex >= indexMainEquipStart && currentIndex <= indexMainEquipEnd) // Start K Column
                             {
                                 equipmentModel = new ModelTypeTempEquipmentModel
                                 {
@@ -216,14 +285,14 @@ namespace ReadExcel
                             #endregion
 
                             #region PNo
-                            if(currentIndex == indexPNoStart)
+                            if (currentIndex == indexPNoStart)
                             {
                                 modelTypeTempRowModel.PNo = currentCellValue;
                             }
                             #endregion
 
                             #region TYPE
-                            if(currentIndex >= indexTypeStart && currentIndex <= indexVinStart -1)
+                            if (currentIndex >= indexTypeStart && currentIndex <= indexVinStart - 1)
                             {
                                 typeModel = new ModelTypeTempTypeModel
                                 {
@@ -236,68 +305,30 @@ namespace ReadExcel
                             #endregion
 
                             #region VIN
-                            if(currentIndex == indexVinStart)
+                            if (currentIndex == indexVinStart)
                             {
                                 modelTypeTempRowModel.VIN = currentCellValue;
                             }
                             #endregion
 
-                            // ENGINE SERIAL No.
-
-                            // Error Description
-
-                            //
-                            //
                             cellValues.Add(currentCellValue);
                         }
                         // End Cell
                         preRow = cellValues;
                         rowValues.Add(cellValues);
-                        modelTypeTempRowModel.modelTypeTempEngines.Add(engineModel);
-                        modelTypeTempRowModel.modelTypeTempEquipmentModels.AddRange(equipmentModels);
-                        modelTypeTempRowModel.modelTypeTempTypeModels.AddRange(typeModels);
-                        tempRowModels.Add(modelTypeTempRowModel);
-                        sheetModel.modelTypeTempRowModels.AddRange(tempRowModels);
+                        modelTypeTempRowModel.ModelTypeTempEngines.Add(engineModel);
+                        modelTypeTempRowModel.ModelTypeTempEquipmentModels.AddRange(equipmentModels);
+                        modelTypeTempRowModel.ModelTypeTempTypeModels.AddRange(typeModels);
+                        sheetModel.ModelTypeTempRowModels.Add(modelTypeTempRowModel);
                     }
                     //End  Row
-                    sheetModels.Add(sheetModel);
+                    sheetModel.SheetNo = ++sheetCount;
+
+                    modelTypeUpload.ModelTypeTempSheetModels.Add(sheetModel);
                 }
             }
-            return sheetModels;
+            return modelTypeUpload;
         }
-
-        //private static List<List<string>> ReadExcelFile(string fileName)
-        //{
-        //    fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Import\\" + fileName);
-        //    string value = string.Empty;
-        //    List<List<string>> rowValues = new List<List<string>>();
-        //    using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
-        //    {
-        //        WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart;
-        //        WorksheetPart worksheetPart = workbookPart.WorksheetParts.FirstOrDefault();
-        //        Worksheet worksheet = worksheetPart.Worksheet;
-        //        SheetData sheetData = worksheet.GetFirstChild<SheetData>();
-        //        Sheets sheets = GetAllWorksheets(workbookPart);
-        //        List<Row> rows = sheetData.Descendants<Row>().ToList();
-        //        foreach(Sheet sheet in sheets)
-        //        {
-        //            // Find Header Position
-        //            MTExcelHeaderModel headerPosition = new MTExcelHeaderModel();
-        //            for (var i = 8; i < 8; i++)
-        //            {
-        //                foreach (Cell cell in rows.ElementAt(i).Descendants<Cell>())
-        //                {
-        //                    string cellValue = GetCellValue(workbookPart, sheet, cell.CellReference);
-        //                    if(cellValue == null)
-        //                    {
-
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return rowValues;
-        //}
 
         private static string GetColumnName(string cellName)
         {
@@ -313,7 +344,7 @@ namespace ReadExcel
             WorksheetPart worksheetPart = (WorksheetPart)(workbookPart.GetPartById(sheet.Id));
 
             Cell theCell = worksheetPart.Worksheet.Descendants<Cell>().Where(c => c.CellReference == addressName).FirstOrDefault();
-            if(theCell != null)
+            if (theCell != null)
             {
                 value = theCell.InnerText;
                 if (theCell.DataType != null)
@@ -323,7 +354,7 @@ namespace ReadExcel
                         case CellValues.SharedString:
                             var stringSharedTable = workbookPart.GetPartsOfType<SharedStringTablePart>().FirstOrDefault();
 
-                            if(stringSharedTable != null)
+                            if (stringSharedTable != null)
                             {
                                 value = stringSharedTable.SharedStringTable.ElementAt(int.Parse(value)).InnerText;
                             }
@@ -356,7 +387,7 @@ namespace ReadExcel
         private static Cell GetCell(Worksheet worksheet, string columnName, uint rowIndex)
         {
             Row row = GetRow(worksheet, rowIndex);
-            if(row == null)
+            if (row == null)
             {
                 return null;
             }
@@ -400,7 +431,7 @@ namespace ReadExcel
                 foreach (MergeCell mergeCell in mergeCells.Descendants<MergeCell>())
                 {
                     string[] cellMerge = mergeCell.Reference.Value.Split(':');
-                    if(cellMerge[0] == addressStart)
+                    if (cellMerge[0] == addressStart)
                     {
                         mergecellPosition = cellMerge[1];
                     }
